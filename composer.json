@@ -1,0 +1,20 @@
+{
+	"name": "humanmade/entity-base",
+	"description": "Entity Base is a content analysis plugin that uses the TextRazor Natural Language Processor to extract entities from post content.",
+	"type": "wordpress-plugin",
+	"require": {
+		"composer/installers": "^1 || ^2"
+	},
+	"license": "GPL-2.0-or-later",
+	"authors": [
+		{
+			"name": "Human Made Limited",
+			"email": "hello@humanmade.com"
+		}
+	],
+	"config": {
+		"allow-plugins": {
+			"composer/installers": true
+		}
+	}
+}
