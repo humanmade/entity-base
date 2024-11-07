@@ -119,7 +119,7 @@ function extract_entities( WP_Post $post ): array {
 			// Ensure we meet minimum confidence and relevance scores.
 			if (
 				( $entity['confidenceScore'] ?? 0 ) < (float) get_option( Admin\OPTION_MIN_CONFIDENCE, 0 )
-				&& ( $entity['relevanceScore'] ?? 0 ) < (float) get_option( Admin\OPTION_MIN_RELEVANCE, 0 )
+				|| ( $entity['relevanceScore'] ?? 0 ) < (float) get_option( Admin\OPTION_MIN_RELEVANCE, 0 )
 			) {
 				Utils\debug_log( sprintf( '❌ Minimum score not met: %s', $entity['entityId'] ) );
 
