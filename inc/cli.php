@@ -136,5 +136,9 @@ function export( $args, $assoc_args ) {
 	$request = new WP_REST_Request( 'GET', 'entity-base/v1/export' );
 	$request->set_query_params( $assoc_args );
 
-	Export\get_items( $request );
+	$items = Export\get_items( $request );
+
+	$format = isset( $assoc_args['format'] ) ? $assoc_args['format'] : 'table';
+	$fields = array_keys( reset( $items ) );
+	WP_CLI\Utils\format_items( $format, $items, $fields );
 }
