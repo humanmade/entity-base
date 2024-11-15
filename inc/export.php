@@ -60,7 +60,7 @@ function get_items( WP_REST_Request $request ) {
 	header( 'X-Accel-Buffering: no' );
 
 	// Check accept header for format.
-	$format = $request->get_param( 'format' );
+	$format = $request->get_param( 'format' ) ?? 'csv';
 
 	// Set content type header.
 	if ( $format === 'json' ) {
