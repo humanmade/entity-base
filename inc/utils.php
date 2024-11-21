@@ -6,6 +6,8 @@ use EntityBase\Admin;
 use TextRazor;
 use TextRazorSettings;
 use WP_CLI;
+use WP_Post;
+use WP_Query;
 
 function get_textrazor_client() : TextRazor {
 	TextRazorSettings::setApiKey( get_option( Admin\OPTION_API_KEY, '' ) );
@@ -32,6 +34,8 @@ function maybe_create_entity( array $entity ): void {
 	$existing_entity_post = get_page_by_path( $slug, OBJECT, 'entity' );
 
 	if ( ! empty( $existing_entity_post ) ) {
+		// Update the connected posts count.
+		update_connected_posts_count( $existing_entity_post );
 		return;
 	}
 
@@ -58,12 +62,26 @@ function maybe_create_entity( array $entity ): void {
 		wp_set_post_terms( $entity_post_id, $entity['freebaseTypes'], 'entity_freebase_type', false );
 	}
 
+	// Update the connected posts count.
+	update_connected_posts_count( get_post( $entity_post_id ) );
+
 	/**
 	 * Fires once an entity has been created.
 	 *
 	 * @param int $entity_post_id The ID of the entity post.
 	 */
 	do_action( 'entitybase_entity_created', $entity_post_id );
+}
+
+/**
+ * Update the count of connected posts for an entity.
+ *
+ * @param WP_Post $entity_post The entity post object.
+ */
+function update_connected_posts_count( WP_Post $entity_post ): void {
+	delete_post_meta( $entity_post->ID, '_connected_posts_count' );
+	$connected_posts_count = get_connected_posts_count( $entity_post );
+	update_post_meta( $entity_post->ID, '_connected_posts_count', $connected_posts_count );
 }
 
 /**
@@ -149,4 +167,77 @@ function get_dbpedia_blocklist(): array {
  */
 function get_freebase_blocklist(): array {
 	return array_filter( explode( "\r\n", get_option( Admin\OPTION_FREEBASE_BLOCKLIST, '' ) ) );
+}
+
+
+/**
+ * Get the number of connected posts for a given entity.
+ *
+ * @param WP_Post $entity_post The entity post object.
+ * @return int The number of connected posts.
+ */
+function get_connected_posts_count( WP_Post $entity_post ): int {
+	$connected_posts_count = get_post_meta( $entity_post->ID, '_connected_posts_count', true );
+
+	if ( ! empty( $connected_posts_count ) ) {
+		return $connected_posts_count;
+	}
+
+	$connected_posts = query_connected_posts( $entity_post );
+	return (int) $connected_posts->found_posts;
+}
+
+/**
+ * Query connected posts for a given entity.
+ *
+ * @param WP_Post $entity_post The entity post object.
+ * @param array $args Optional. Additional query arguments.
+ * @return WP_Query The query object containing connected posts.
+ */
+function query_connected_posts( WP_Post $entity_post, array $args = [] ): WP_Query {
+	$slug = sanitize_title( $entity_post->post_name );
+
+	$default_args = [
+		'post_type' => 'any',
+		'post_status' => 'publish',
+		'meta_key' => mb_strcut( '_entity_rel_' . $slug, 0, 256 ),
+		'meta_compare' => 'EXISTS',
+		'fields' => 'ids',
+	];
+
+	$query_args = wp_parse_args( $args, $default_args );
+
+	return new WP_Query( $query_args );
+}
+
+/**
+ * Get the entities connected to a post.
+ *
+ * @param WP_Post $post The post object.
+ * @return array The entities connected to the post.
+ */
+function get_entities_for_post( WP_Post $post ): array {
+	// Get all meta for the post.
+	$meta = get_post_meta( $post->ID );
+
+	// Filter meta keys that match the pattern _entity_$slug.
+	$entity_meta_keys = array_filter( array_keys( $meta ), function ( $key ) {
+		return strpos( $key, '_entity_rel' ) === 0;
+	} );
+
+	if ( empty( $entity_meta_keys ) ) {
+		return [];
+	}
+
+	// Extract slugs from meta keys.
+	$slugs = array_map( function ( $meta_key ) {
+		return str_replace( '_entity_rel_', '', $meta_key );
+	}, $entity_meta_keys );
+
+	// Query for entities using these slugs.
+	return get_posts( [
+		'post_type' => 'entity',
+		'post_name__in' => $slugs,
+		'posts_per_page' => min( count( $slugs ), 100 ),
+	] );
 }

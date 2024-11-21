@@ -2,8 +2,15 @@
 
 namespace EntityBase;
 
+use WP_Post;
+use EntityBase\Utils;
+
 function setup() {
 	add_action( 'init', __NAMESPACE__ . '\\register_entity_post_type' );
+	add_filter( 'manage_entity_posts_columns', __NAMESPACE__ . '\\add_connected_posts_column' );
+	add_action( 'manage_entity_posts_custom_column', __NAMESPACE__ . '\\render_connected_posts_column', 10, 2 );
+	add_filter( 'manage_edit-entity_sortable_columns', __NAMESPACE__ . '\\make_connected_posts_column_sortable' );
+	add_action( 'pre_get_posts', __NAMESPACE__ . '\\sort_by_connected_posts' );
 }
 
 /**
@@ -106,4 +113,56 @@ function register_entity_post_type() : void {
 	];
 
 	register_taxonomy( 'entity_freebase_type', 'entity', $taxonomy_args );
+}
+
+/**
+ * Add a column to display the number of connected posts.
+ *
+ * @param array $columns The existing columns.
+ * @return array The modified columns.
+ */
+function add_connected_posts_column( array $columns ): array {
+	$columns['connected_posts'] = __( 'Connected Posts', 'entitybase' );
+	return $columns;
+}
+
+/**
+ * Render the connected posts column.
+ *
+ * @param string $column The column name.
+ * @param int $post_id The post ID.
+ */
+function render_connected_posts_column( string $column, int $post_id ): void {
+	if ( 'connected_posts' === $column ) {
+		$entity_post = get_post( $post_id );
+		$connected_posts_count = Utils\get_connected_posts_count( $entity_post );
+		echo esc_html( $connected_posts_count );
+	}
+}
+
+/**
+ * Make the connected posts column sortable.
+ *
+ * @param array $columns The existing sortable columns.
+ * @return array The modified sortable columns.
+ */
+function make_connected_posts_column_sortable( array $columns ): array {
+	$columns['connected_posts'] = 'connected_posts';
+	return $columns;
+}
+
+/**
+ * Sort the entities by the number of connected posts.
+ *
+ * @param \WP_Query $query The current query.
+ */
+function sort_by_connected_posts( \WP_Query $query ): void {
+	if ( ! is_admin() || ! $query->is_main_query() ) {
+		return;
+	}
+
+	if ( 'connected_posts' === $query->get( 'orderby' ) ) {
+		$query->set( 'meta_key', '_connected_posts_count' );
+		$query->set( 'orderby', 'meta_value_num' );
+	}
 }
