@@ -11,6 +11,7 @@ function setup() {
 	add_action( 'manage_entity_posts_custom_column', __NAMESPACE__ . '\\render_connected_posts_column', 10, 2 );
 	add_filter( 'manage_edit-entity_sortable_columns', __NAMESPACE__ . '\\make_connected_posts_column_sortable' );
 	add_action( 'pre_get_posts', __NAMESPACE__ . '\\sort_by_connected_posts' );
+	add_action( 'pre_wp_update_comment_count_now', __NAMESPACE__ . '\\filter_pre_wp_update_comment_count_now', 10, 3 );
 }
 
 /**
@@ -135,8 +136,8 @@ function add_connected_posts_column( array $columns ): array {
 function render_connected_posts_column( string $column, int $post_id ): void {
 	if ( 'connected_posts' === $column ) {
 		$entity_post = get_post( $post_id );
-		$connected_posts_count = Utils\get_connected_posts_count( $entity_post );
-		echo esc_html( $connected_posts_count );
+
+		echo absint( $entity_post->comment_count );
 	}
 }
 
@@ -162,7 +163,26 @@ function sort_by_connected_posts( \WP_Query $query ): void {
 	}
 
 	if ( 'connected_posts' === $query->get( 'orderby' ) ) {
-		$query->set( 'meta_key', '_connected_posts_count' );
-		$query->set( 'orderby', 'meta_value_num' );
+		// $query->set( 'meta_key', '_connected_posts_count' );
+		$query->set( 'orderby', 'comment_count' );
 	}
+}
+
+/**
+ * Filters comment count for entity post types and store connected post count.
+ *
+ * @param int|null $new_count The new comment count.
+ * @param int $old_count The old comment count.
+ * @param int $post_id   The post ID.
+ *
+ * @return int The filtered comment count - either connected posts count for entities or original count.
+ */
+function filter_pre_wp_update_comment_count_now( ?int $new_count, int $old_count, int $post_id ): ?int {
+	$entity_post = get_post( $post_id );
+
+	if ( 'entity' !== $entity_post->post_type ) {
+		return $new_count;
+	}
+
+	return Utils\get_connected_posts_count( $entity_post );
 }

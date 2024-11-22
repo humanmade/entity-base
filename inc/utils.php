@@ -79,9 +79,7 @@ function maybe_create_entity( array $entity ): void {
  * @param WP_Post $entity_post The entity post object.
  */
 function update_connected_posts_count( WP_Post $entity_post ): void {
-	delete_post_meta( $entity_post->ID, '_connected_posts_count' );
-	$connected_posts_count = get_connected_posts_count( $entity_post );
-	update_post_meta( $entity_post->ID, '_connected_posts_count', $connected_posts_count );
+	wp_update_comment_count( $entity_post->ID, true );
 }
 
 /**
