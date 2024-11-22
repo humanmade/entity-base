@@ -136,7 +136,6 @@ function add_connected_posts_column( array $columns ): array {
 function render_connected_posts_column( string $column, int $post_id ): void {
 	if ( 'connected_posts' === $column ) {
 		$entity_post = get_post( $post_id );
-
 		echo absint( $entity_post->comment_count );
 	}
 }
@@ -163,7 +162,6 @@ function sort_by_connected_posts( \WP_Query $query ): void {
 	}
 
 	if ( 'connected_posts' === $query->get( 'orderby' ) ) {
-		// $query->set( 'meta_key', '_connected_posts_count' );
 		$query->set( 'orderby', 'comment_count' );
 	}
 }
