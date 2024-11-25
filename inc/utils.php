@@ -34,7 +34,7 @@ function maybe_create_entity( array $entity ): void {
 	$existing_entity_post = get_page_by_path( $slug, OBJECT, 'entity' );
 
 	if ( ! empty( $existing_entity_post ) ) {
-		// Update the connected posts count.
+		// Update the saved connected posts count.
 		update_connected_posts_count( $existing_entity_post );
 		return;
 	}
@@ -62,7 +62,7 @@ function maybe_create_entity( array $entity ): void {
 		wp_set_post_terms( $entity_post_id, $entity['freebaseTypes'], 'entity_freebase_type', false );
 	}
 
-	// Update the connected posts count.
+	// Update the saved connected posts count.
 	update_connected_posts_count( get_post( $entity_post_id ) );
 
 	/**
@@ -75,6 +75,8 @@ function maybe_create_entity( array $entity ): void {
 
 /**
  * Update the count of connected posts for an entity.
+ *
+ * This is stored in the WP core comment count column for performance reasons.
  *
  * @param WP_Post $entity_post The entity post object.
  */

@@ -154,6 +154,8 @@ function make_connected_posts_column_sortable( array $columns ): array {
 /**
  * Sort the entities by the number of connected posts.
  *
+ * We're storing this data in the core WP comment count column for performance reasons.
+ *
  * @param \WP_Query $query The current query.
  */
 function sort_by_connected_posts( \WP_Query $query ): void {
@@ -168,6 +170,9 @@ function sort_by_connected_posts( \WP_Query $query ): void {
 
 /**
  * Filters comment count for entity post types and store connected post count.
+ *
+ * We're abusing the comment count column for this post type for performance reasons.
+ * This means we can easily order by connected post count without a meta query.
  *
  * @param int|null $new_count The new comment count.
  * @param int $old_count The old comment count.
