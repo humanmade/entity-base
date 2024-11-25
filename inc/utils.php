@@ -216,11 +216,11 @@ function query_connected_posts( WP_Post $entity_post, array $args = [] ): WP_Que
  * @param WP_Post $post The post object.
  * @return array The entities connected to the post.
  */
-function get_entities_for_post( WP_Post $post ): array {
+function get_entities_for_post( WP_Post $post, array $query_args = [] ): array {
 	// Get all meta for the post.
 	$meta = get_post_meta( $post->ID );
 
-	// Filter meta keys that match the pattern _entity_$slug.
+	// Filter meta keys to those that match the pattern _entity_$slug.
 	$entity_meta_keys = array_filter( array_keys( $meta ), function ( $key ) {
 		return strpos( $key, '_entity_rel' ) === 0;
 	} );
@@ -229,15 +229,23 @@ function get_entities_for_post( WP_Post $post ): array {
 		return [];
 	}
 
+	// Order entities by relevance
+	usort( $entity_meta_keys, function( $a, $b ) use ( $meta ){
+		return $meta[ $a ] <=> $meta[ $b ];
+	} );
+
 	// Extract slugs from meta keys.
 	$slugs = array_map( function ( $meta_key ) {
 		return str_replace( '_entity_rel_', '', $meta_key );
 	}, $entity_meta_keys );
 
-	// Query for entities using these slugs.
-	return get_posts( [
+	$query_args = wp_parse_args( $query_args, [
 		'post_type' => 'entity',
 		'post_name__in' => $slugs,
 		'posts_per_page' => min( count( $slugs ), 100 ),
+		'orderby' => 'post_name__in',
 	] );
+
+	$query = new WP_Query( $query_args );
+	return $query->posts;
 }
