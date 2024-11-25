@@ -69,13 +69,13 @@ $connected_posts = new WP_Query( [
 ] );
 ```
 
-When an entity is deleted, the confidence and relevence scores attached to posts are also deleted.
+When an entity is deleted, the confidence and relevance scores attached to posts are also deleted.
 
-The connected post count is stored in the comment_count column so you can query and order entities based on this value in a performant way.
+The connected post count is stored in the `comment_count` column of the entity so that you can query and order entities based on this value in a performant way.
 
 To query for all entities attached to a post, you can use the utility function `get_entities_for_post` which will return the entities ordered by relevance score.
 
-```
+```php
 $entities = EntityBase\Utils\get_entities_for_post( WP_Post $post );
 ```
 
