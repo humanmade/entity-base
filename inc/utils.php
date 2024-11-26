@@ -2,6 +2,7 @@
 
 namespace EntityBase\Utils;
 
+use EntityBase;
 use EntityBase\Admin;
 use TextRazor;
 use TextRazorSettings;
@@ -34,8 +35,7 @@ function maybe_create_entity( array $entity ): void {
 	$existing_entity_post = get_page_by_path( $slug, OBJECT, 'entity' );
 
 	if ( ! empty( $existing_entity_post ) ) {
-		// Update the saved connected posts count.
-		update_connected_posts_count( $existing_entity_post );
+		EntityBase\update_connected_posts_count( $existing_entity_post );
 		return;
 	}
 
@@ -63,7 +63,7 @@ function maybe_create_entity( array $entity ): void {
 	}
 
 	// Update the saved connected posts count.
-	update_connected_posts_count( get_post( $entity_post_id ) );
+	EntityBase\update_connected_posts_count( get_post( $entity_post_id ) );
 
 	/**
 	 * Fires once an entity has been created.
@@ -71,17 +71,6 @@ function maybe_create_entity( array $entity ): void {
 	 * @param int $entity_post_id The ID of the entity post.
 	 */
 	do_action( 'entitybase_entity_created', $entity_post_id );
-}
-
-/**
- * Update the count of connected posts for an entity.
- *
- * This is stored in the WP core comment count column for performance reasons.
- *
- * @param WP_Post $entity_post The entity post object.
- */
-function update_connected_posts_count( WP_Post $entity_post ): void {
-	wp_update_comment_count( $entity_post->ID, true );
 }
 
 /**
@@ -167,24 +156,6 @@ function get_dbpedia_blocklist(): array {
  */
 function get_freebase_blocklist(): array {
 	return array_filter( explode( "\r\n", get_option( Admin\OPTION_FREEBASE_BLOCKLIST, '' ) ) );
-}
-
-
-/**
- * Get the number of connected posts for a given entity.
- *
- * @param WP_Post $entity_post The entity post object.
- * @return int The number of connected posts.
- */
-function get_connected_posts_count( WP_Post $entity_post ): int {
-	$connected_posts_count = get_post_meta( $entity_post->ID, '_connected_posts_count', true );
-
-	if ( ! empty( $connected_posts_count ) ) {
-		return $connected_posts_count;
-	}
-
-	$connected_posts = query_connected_posts( $entity_post );
-	return (int) $connected_posts->found_posts;
 }
 
 /**

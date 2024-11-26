@@ -8,9 +8,9 @@ use EntityBase\Utils;
 function setup() {
 	add_action( 'init', __NAMESPACE__ . '\\register_entity_post_type' );
 	add_filter( 'manage_entity_posts_columns', __NAMESPACE__ . '\\add_connected_posts_column' );
-	add_action( 'manage_entity_posts_custom_column', __NAMESPACE__ . '\\render_connected_posts_column', 10, 2 );
-	add_filter( 'manage_edit-entity_sortable_columns', __NAMESPACE__ . '\\make_connected_posts_column_sortable' );
-	add_action( 'pre_get_posts', __NAMESPACE__ . '\\sort_by_connected_posts' );
+	add_action( 'manage_entity_posts_custom_column', __NAMESPACE__ . '\\render_connected_posts_count_column', 10, 2 );
+	add_filter( 'manage_edit-entity_sortable_columns', __NAMESPACE__ . '\\make_connected_posts_count_column_sortable' );
+	add_action( 'pre_get_posts', __NAMESPACE__ . '\\sort_by_connected_posts_count' );
 	add_action( 'pre_wp_update_comment_count_now', __NAMESPACE__ . '\\filter_pre_wp_update_comment_count_now', 10, 3 );
 }
 
@@ -133,7 +133,7 @@ function add_connected_posts_column( array $columns ): array {
  * @param string $column The column name.
  * @param int $post_id The post ID.
  */
-function render_connected_posts_column( string $column, int $post_id ): void {
+function render_connected_posts_count_column( string $column, int $post_id ): void {
 	if ( 'connected_posts' === $column ) {
 		$entity_post = get_post( $post_id );
 		echo absint( $entity_post->comment_count );
@@ -146,7 +146,7 @@ function render_connected_posts_column( string $column, int $post_id ): void {
  * @param array $columns The existing sortable columns.
  * @return array The modified sortable columns.
  */
-function make_connected_posts_column_sortable( array $columns ): array {
+function make_connected_posts_count_column_sortable( array $columns ): array {
 	$columns['connected_posts'] = 'connected_posts';
 	return $columns;
 }
@@ -158,7 +158,7 @@ function make_connected_posts_column_sortable( array $columns ): array {
  *
  * @param \WP_Query $query The current query.
  */
-function sort_by_connected_posts( \WP_Query $query ): void {
+function sort_by_connected_posts_count( \WP_Query $query ): void {
 	if ( ! is_admin() || ! $query->is_main_query() ) {
 		return;
 	}
@@ -187,5 +187,15 @@ function filter_pre_wp_update_comment_count_now( ?int $new_count, int $old_count
 		return $new_count;
 	}
 
-	return Utils\get_connected_posts_count( $entity_post );
+	$query = Utils\query_connected_posts( $entity_post );
+	return $query->found_posts;
+}
+
+/**
+ * Update to the connected posts count.
+ *
+ * @param WP_Post $entity_post The entity post object.
+ */
+function update_connected_posts_count( WP_Post $entity_post ): void {
+	wp_update_comment_count( $entity_post->ID );
 }
