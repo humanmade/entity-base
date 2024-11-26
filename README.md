@@ -52,11 +52,15 @@ When a post is analysed, the extracted entities are saved to the post's meta dat
 - `_entity_rel_{entity_slug}`: Relevance score for each entity.
 - `_entities`: Array of all extracted entites and associated data from TextRazor.
 
-The posts associated with an entity can be queried using a meta key EXISTS query.
+The posts associated with an entity can be queried using a meta key EXISTS query. Or by using the utility function `EntityBase\Utils\query_connected_posts`.
 
 Example code:
 
 ```php
+$connected_posts = EntityBase\Utils\query_connected_posts( $entity_post );
+
+// Or
+
 $connected_posts = new WP_Query( [
 	'post_type' => 'any',
 	'post_status' => 'publish',
@@ -65,7 +69,15 @@ $connected_posts = new WP_Query( [
 ] );
 ```
 
-When an entity is deleted, the confidence and relevence scores attached to posts are also deleted.
+When an entity is deleted, the confidence and relevance scores attached to posts are also deleted.
+
+The connected post count is stored in the `comment_count` column of the entity so that you can query and order entities based on this value in a performant way.
+
+To query for all entities attached to a post, you can use the utility function `get_entities_for_post` which will return the entities ordered by relevance score.
+
+```php
+$entities = EntityBase\Utils\get_entities_for_post( WP_Post $post );
+```
 
 ## Exporting entities
 
