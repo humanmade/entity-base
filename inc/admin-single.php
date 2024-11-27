@@ -68,7 +68,7 @@ function render_entities_meta_box( WP_Post $post ): void {
 		 * @param string $edit_link The edit link for the entity.
 		 * @param WP_Post $entity The entity object.
 		 */
-		$edit_link = apply_filters( 'hm.entity-base.meta_box_entity_edit_link', get_edit_post_link( $entity->ID ), $entity );
+		$edit_link = apply_filters( 'entitybase_entities_meta_box_edit_link', get_edit_post_link( $entity->ID ), $entity );
 
 		echo '<tr>';
 		echo '<td><a href="' . esc_url( $edit_link ) . '">' . esc_html( $entity->post_title ) . '</a></td>';
