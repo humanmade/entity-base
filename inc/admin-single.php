@@ -72,8 +72,8 @@ function render_entities_meta_box( WP_Post $post ): void {
 
 		echo '<tr>';
 		echo '<td><a href="' . esc_url( $edit_link ) . '">' . esc_html( $entity->post_title ) . '</a></td>';
-		$relevance = number_format( (float) get_post_meta( $post->ID, '_entity_rel_' . $entity->post_name, true ), 2, '.', '' );
-		echo '<td style="text-align: right;">' . esc_html( $relevance ) . '</td>';
+		$relevance = (float) get_post_meta( $post->ID, '_entity_rel_' . $entity->post_name, true ) * 100;
+		echo '<td style="text-align: right;">' . esc_html( number_format( $relevance, 0 ) ) . '%</td>';
 		echo '</tr>';
 	}
 
