@@ -101,6 +101,10 @@ function admin_css(): void {
 	border-bottom: none;
 }
 
+#entities_meta_box th {
+	font-weight: bold;
+}
+
 #entities_meta_box th,
 #entities_meta_box td {
 	padding: 8px;
