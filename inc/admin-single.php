@@ -21,11 +21,13 @@ function setup(): void {
  * Add the entities meta box to the post edit screen.
  */
 function add_entities_meta_box(): void {
+	$allowed_post_types = apply_filters( 'entitybase_allowed_post_types', [ 'post' ] );
+
 	add_meta_box(
 		'entities_meta_box',
 		__( 'Entities', 'entity-base' ),
 		__NAMESPACE__ . '\\render_entities_meta_box',
-		'post',
+		$allowed_post_types,
 		'side',
 		'default'
 	);
