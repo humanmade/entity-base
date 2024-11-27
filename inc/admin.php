@@ -59,7 +59,9 @@ function settings_init() {
 	register_setting( 'entitybase_settings', OPTION_DBPEDIA_BLOCKLIST );
 	register_setting( 'entitybase_settings', OPTION_FREEBASE_BLOCKLIST );
 	register_setting( 'entitybase_settings', OPTION_MIN_CONFIDENCE );
-	register_setting( 'entitybase_settings', OPTION_MIN_RELEVANCE );
+	register_setting( 'entitybase_settings', OPTION_MIN_RELEVANCE, [
+		'sanitize_callback' => __NAMESPACE__ . '\\sanitize_percentage',
+	] );
 
 	add_settings_section(
 		'entitybase_settings_section',
@@ -220,10 +222,21 @@ function minimum_confidence_callback() {
 
 // Callback function for the minimum relevance field.
 function minimum_relevance_callback() {
+	$relevance = floatval( get_option( OPTION_MIN_RELEVANCE, 0 ) ) * 100;
 	printf(
-		'<input type="number" min="0" max="1" step="0.01" name="%s" value="%s" />',
+		'<input type="number" min="0" max="100" step="0.1" name="%s" value="%s" />&percnt;',
 		esc_attr( OPTION_MIN_RELEVANCE ),
-		esc_attr( get_option( OPTION_MIN_RELEVANCE, 0 ) )
+		esc_attr( $relevance )
 	);
-	printf( '<p class="description">%s</p>', esc_html__( 'Between 0 and 1', 'entitybase' ) );
+	printf( '<p class="description">%s</p>', esc_html__( 'Enter a percentage between 0 and 100.', 'entitybase' ) );
+}
+
+/**
+ * Sanitize a percentage.
+ *
+ * @param mixed $value The value to sanitize.
+ * @return float The sanitized value.
+ */
+function sanitize_percentage( $value ): float {
+	return max( 0, min( 1, floatval( $value ) / 100 ) );
 }
