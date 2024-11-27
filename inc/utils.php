@@ -201,8 +201,8 @@ function get_entities_for_post( WP_Post $post, array $query_args = [] ): array {
 	}
 
 	// Order entities by relevance
-	usort( $entity_meta_keys, function( $a, $b ) use ( $meta ){
-		return $meta[ $a ] <=> $meta[ $b ];
+	usort( $entity_meta_keys, function( $a, $b ) use ( $meta ) {
+		return floatval( $meta[ $b ][0] ) <=> floatval( $meta[ $a ][0] );
 	} );
 
 	// Extract slugs from meta keys.

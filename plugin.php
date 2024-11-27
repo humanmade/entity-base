@@ -17,6 +17,7 @@ require_once __DIR__ . '/inc/utils.php';
 require_once __DIR__ . '/inc/namespace.php';
 
 require_once __DIR__ . '/inc/admin.php';
+require_once __DIR__ . '/inc/admin-single.php';
 require_once __DIR__ . '/inc/cleanup.php';
 require_once __DIR__ . '/inc/cli.php';
 require_once __DIR__ . '/inc/export.php';
@@ -25,6 +26,7 @@ require_once __DIR__ . '/inc/single.php';
 
 setup();
 Admin\setup();
+AdminSingle\setup();
 Cleanup\setup();
 CLI\setup();
 Export\setup();
