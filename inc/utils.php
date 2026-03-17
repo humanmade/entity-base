@@ -36,6 +36,13 @@ function maybe_create_entity( array $entity ): void {
 
 	if ( ! empty( $existing_entity_post ) ) {
 		EntityBase\update_connected_posts_count( $existing_entity_post );
+		
+		/**
+		 * Fires once an existing entity was found and re-used.
+		 *
+		 * @param int $entity_post_id The ID of the existing entity post.
+		 */
+		do_action( 'entitybase_entity_exists', $existing_entity_post->ID );
 		return;
 	}
 
