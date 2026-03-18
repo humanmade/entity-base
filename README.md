@@ -1,4 +1,4 @@
-# Entity Base
+# WordPress TextRazor Entity Base
 
 Entity Base is a content analysis plugin that uses the TextRazor Natural Language Processor to extract entities from post content.
 
