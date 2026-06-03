@@ -218,10 +218,11 @@ function get_entities_for_post( WP_Post $post, array $query_args = [] ): array {
 	}, $entity_meta_keys );
 
 	$query_args = wp_parse_args( $query_args, [
-		'post_type' => 'entity',
-		'post_name__in' => $slugs,
+		'post_type'      => 'entity',
+		'post_name__in'  => $slugs,
 		'posts_per_page' => min( count( $slugs ), 100 ),
-		'orderby' => 'post_name__in',
+		'orderby'        => 'post_name__in',
+		'no_found_rows'  => true,
 	] );
 
 	$query = new WP_Query( $query_args );
